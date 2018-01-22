@@ -1,108 +1,124 @@
 <template>
-  <div class="vdp-datepicker" :class="[wrapperClass, isRtl ? 'rtl' : '']">
-    <div :class="{'input-group' : bootstrapStyling}">
-      <!-- Calendar Button -->
-      <span v-if="calendarButton" class="vdp-datepicker__calendar-button" :class="{'input-group-addon' : bootstrapStyling}" @click="showCalendar" v-bind:style="{'cursor:not-allowed;' : disabledPicker}">
-        <i :class="calendarButtonIcon">
-          {{ calendarButtonIconContent }}
-          <span v-if="!calendarButtonIcon">&hellip;</span>
-        </i>
-      </span>
-      <!-- Input -->
-      <input
-        :type="inline ? 'hidden' : 'text'"
-        :class="[ inputClass, { 'form-control' : bootstrapStyling } ]"
-        :name="name"
-        :ref="refName"
-        :id="id"
-        @click="showCalendar"
-        :value="formattedValue"
-        :open-date="openDate"
-        :placeholder="placeholder"
-        :clear-button="clearButton"
-        :disabled="disabledPicker"
-        :required="required"
-        readonly>
-      <!-- Clear Button -->
-      <span v-if="clearButton && selectedDate" class="vdp-datepicker__clear-button" :class="{'input-group-addon' : bootstrapStyling}" @click="clearDate()">
-        <i :class="clearButtonIcon">
-          <span v-if="!clearButtonIcon">&times;</span>
-        </i>
-      </span>
-    </div>
+  <transition name="fade">
+    <div class="vdp-datepicker" :class="[wrapperClass, isRtl ? 'rtl' : '']">
+      <div :class="{'input-group' : bootstrapStyling}">
+        <!-- Calendar Button -->
+        <span v-if="calendarButton" class="vdp-datepicker__calendar-button" :class="{'input-group-addon' : bootstrapStyling}" @click="showCalendar" v-bind:style="{'cursor:not-allowed;' : disabledPicker}">
+          <i :class="calendarButtonIcon">
+            {{ calendarButtonIconContent }}
+            <span v-if="!calendarButtonIcon">&hellip;</span>
+          </i>
+        </span>
+        <!-- Input -->
+        <input
+          :type="inline ? 'hidden' : 'text'"
+          :class="[ inputClass, { 'form-control' : bootstrapStyling } ]"
+          :name="name"
+          :ref="refName"
+          :id="id"
+          @click="showCalendar"
+          :value="formattedValue"
+          :open-date="openDate"
+          :placeholder="placeholder"
+          :clear-button="clearButton"
+          :disabled="disabledPicker"
+          :required="required"
+          readonly>
+        <!-- Clear Button -->
+        <span v-if="clearButton && selectedDate" class="vdp-datepicker__clear-button" :class="{'input-group-addon' : bootstrapStyling}" @click="clearDate()">
+          <i :class="clearButtonIcon">
+            <span v-if="!clearButtonIcon">&times;</span>
+          </i>
+        </span>
+      </div>
 
-    <!-- Day View -->
-    <template v-if="allowedToShowView('day')">
-      <div :class="[calendarClass, 'vdp-datepicker__calendar']" v-show="showDayView" v-bind:style="calendarStyle">
-          <header>
-              <span
-                  @click="isRtl ? nextMonth() : previousMonth()"
-                  class="prev"
-                  v-bind:class="{ 'disabled' : isRtl ? nextMonthDisabled(pageTimestamp) : previousMonthDisabled(pageTimestamp) }">&lt;</span>
-              <span @click="showMonthCalendar" :class="allowedToShowView('month') ? 'up' : ''">{{ isYmd ? currYear : currMonthName }} {{ isYmd ? currMonthName : currYear }}</span>
-              <span
-                  @click="isRtl ? previousMonth() : nextMonth()"
-                  class="next"
-                  v-bind:class="{ 'disabled' : isRtl ? previousMonthDisabled(pageTimestamp) : nextMonthDisabled(pageTimestamp) }">&gt;</span>
-          </header>
-          <div :class="isRtl ? 'flex-rtl' : ''">
-            <span class="cell day-header" v-for="d in daysOfWeek" :key="d.timestamp">{{ d }}</span>
-            <template v-if="blankDays > 0">
-              <span class="cell day blank" v-for="d in blankDays" :key="d.timestamp"></span>
-            </template><!--
-            --><span class="cell day"
-                v-for="day in days"
-                :key="day.timestamp"
+      <!-- Day View -->
+      <transition name="fade">
+      <template v-if="allowedToShowView('day')">
+        <div :class="[calendarClass, 'vdp-datepicker__calendar']" v-show="showDayView" v-bind:style="calendarStyle">
+            <header>
+                <span
+                    @click="isRtl ? nextMonth() : previousMonth()"
+                    class="prev material-icons"
+                    v-bind:class="{ 'disabled' : isRtl ? nextMonthDisabled(pageTimestamp) : previousMonthDisabled(pageTimestamp) }">
+                    keyboard_arrow_left
+                </span>
+                <span @click="showMonthCalendar" :class="allowedToShowView('month') ? 'up' : ''">{{ isYmd ? currYear : currMonthName }} {{ isYmd ? currMonthName : currYear }}</span>
+                <span
+                    @click="isRtl ? previousMonth() : nextMonth()"
+                    class="next material-icons"
+                    v-bind:class="{ 'disabled' : isRtl ? previousMonthDisabled(pageTimestamp) : nextMonthDisabled(pageTimestamp) }">
+                    keyboard_arrow_right
+                    </span>
+            </header>
+            <div :class="isRtl ? 'flex-rtl' : ''">
+              <span class="cell day-header" v-for="d in daysOfWeek" :key="d.timestamp">{{ d }}</span>
+              <template v-if="blankDays > 0">
+                <span class="cell day blank" v-for="d in blankDays" :key="d.timestamp"></span>
+              </template><!--
+              --><span class="cell day"
+                  v-for="day in days"
+                  :key="day.timestamp"
+                  track-by="timestamp"
+                  v-bind:class="dayClasses(day)"
+                  @click="selectDate(day)">{{ day.date }}</span>
+            </div>
+        </div>
+      </template>
+      </transition>
+
+      <!-- Month View -->
+      <template v-if="allowedToShowView('month')">
+        <div :class="[calendarClass, 'vdp-datepicker__calendar']" v-show="showMonthView" v-bind:style="calendarStyle">
+            <header>
+                <span
+                    @click="previousYear"
+                    class="prev material-icons"
+                    v-bind:class="{ 'disabled' : previousYearDisabled(pageTimestamp) }">
+                    keyboard_arrow_left
+                    </span>
+                <span @click="showYearCalendar" :class="allowedToShowView('year') ? 'up' : ''">{{ getPageYear() }}</span>
+                <span
+                    @click="nextYear"
+                    class="next material-icons"
+                    v-bind:class="{ 'disabled' : nextYearDisabled(pageTimestamp) }">
+                    keyboard_arrow_right
+                    </span>
+            </header>
+            <span class="cell month"
+                v-for="month in months"
+                :key="month.timestamp"
                 track-by="timestamp"
-                v-bind:class="dayClasses(day)"
-                @click="selectDate(day)">{{ day.date }}</span>
-          </div>
-      </div>
-    </template>
+                v-bind:class="{ 'selected': month.isSelected, 'disabled': month.isDisabled }"
+                @click.stop="selectMonth(month)">{{ month.month }}</span>
+        </div>
+      </template>
 
-    <!-- Month View -->
-    <template v-if="allowedToShowView('month')">
-      <div :class="[calendarClass, 'vdp-datepicker__calendar']" v-show="showMonthView" v-bind:style="calendarStyle">
-          <header>
-              <span
-                  @click="previousYear"
-                  class="prev"
-                  v-bind:class="{ 'disabled' : previousYearDisabled(pageTimestamp) }">&lt;</span>
-              <span @click="showYearCalendar" :class="allowedToShowView('year') ? 'up' : ''">{{ getPageYear() }}</span>
-              <span
-                  @click="nextYear"
-                  class="next"
-                  v-bind:class="{ 'disabled' : nextYearDisabled(pageTimestamp) }">&gt;</span>
-          </header>
-          <span class="cell month"
-              v-for="month in months"
-              :key="month.timestamp"
-              track-by="timestamp"
-              v-bind:class="{ 'selected': month.isSelected, 'disabled': month.isDisabled }"
-              @click.stop="selectMonth(month)">{{ month.month }}</span>
-      </div>
-    </template>
-
-    <!-- Year View -->
-    <template v-if="allowedToShowView('year')">
-      <div :class="[calendarClass, 'vdp-datepicker__calendar']" v-show="showYearView" v-bind:style="calendarStyle">
-          <header>
-              <span @click="previousDecade" class="prev"
-                  v-bind:class="{ 'disabled' : previousDecadeDisabled(pageTimestamp) }">&lt;</span>
-              <span>{{ getPageDecade() }}</span>
-              <span @click="nextDecade" class="next"
-                  v-bind:class="{ 'disabled' : nextMonthDisabled(pageTimestamp) }">&gt;</span>
-          </header>
-          <span
-              class="cell year"
-              v-for="year in years"
-              :key="year.timestamp"
-              track-by="timestamp"
-              v-bind:class="{ 'selected': year.isSelected, 'disabled': year.isDisabled }"
-              @click.stop="selectYear(year)">{{ year.year }}</span>
-      </div>
-    </template>
-  </div>
+      <!-- Year View -->
+      <template v-if="allowedToShowView('year')">
+        <div :class="[calendarClass, 'vdp-datepicker__calendar']" v-show="showYearView" v-bind:style="calendarStyle">
+            <header>
+                <span @click="previousDecade" class="prev material-icons"
+                    v-bind:class="{ 'disabled' : previousDecadeDisabled(pageTimestamp) }">
+                    keyboard_arrow_left
+                    </span>
+                <span>{{ getPageDecade() }}</span>
+                <span @click="nextDecade" class="next material-icons"
+                    v-bind:class="{ 'disabled' : nextMonthDisabled(pageTimestamp) }">
+                    keyboard_arrow_right
+                    </span>
+            </header>
+            <span
+                class="cell year"
+                v-for="year in years"
+                :key="year.timestamp"
+                track-by="timestamp"
+                v-bind:class="{ 'selected': year.isSelected, 'disabled': year.isDisabled }"
+                @click.stop="selectYear(year)">{{ year.year }}</span>
+        </div>
+      </template>
+    </div>
+  </transition>
 </template>
 
 <script>
@@ -857,6 +873,37 @@ export default {
 </script>
 
 <style lang="stylus">
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .16s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active em versões anteriores a 2.1.8 */ {
+  opacity: 0;
+}
 
 $width = 300px
 
@@ -872,8 +919,10 @@ $width = 300px
     position absolute
     z-index 100
     background white
+    border-radius 8px
     width $width
-    border 1px solid #ccc
+    box-shadow 0 0 0 2px rgba(0,0,0,.16)
+    overflow hidden
     header
         display block
         line-height 40px
@@ -886,29 +935,12 @@ $width = 300px
         .prev
         .next
             width (100/7)%
+            height 40px
             float left
-            text-indent -10000px
             position relative
-            &:after
-                content ''
-                position absolute
-                left 50%
-                top 50%
-                transform translateX(-50%) translateY(-50%)
-                border 6px solid transparent
-
-        .prev
-            &:after
-                border-right 10px solid #000
-                margin-left -5px
-            &.disabled:after
-                border-right 10px solid #ddd
-        .next
-            &:after
-                border-left 10px solid #000
-                margin-left 5px
-            &.disabled:after
-                border-left 10px solid #ddd
+            display flex
+            align-items center
+            justify-content center
 
         .prev:not(.disabled)
         .next:not(.disabled)
@@ -930,6 +962,7 @@ $width = 300px
         padding 0 5px
         width (100/7)%
         height 40px
+        border-radius 8px
         line-height 40px
         text-align center
         vertical-align middle
